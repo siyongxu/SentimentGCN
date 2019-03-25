@@ -1,3 +1,5 @@
+from itertools import combinations
+
 def make_window(sentences, window_size) :
     # In this case, sentences = train_data[][1]
     windows = []
@@ -35,10 +37,15 @@ def count_word_freq(vocab, windows) :
 
     return word_freq
 
-def count_pair_freq(vocab, windows) :
-    pair_freq = {}
-    for i in range(len(vocab)) :
-        for j in range(i+1, len(vocab)) :
-            if (vocab[i], vocab[j]) not in pair_freq :
-                pair_freq[(vocab[i], vocab[j])] = count_pair(windows, vocab[i], vocab[j])
+def count_pair_freq(windows) :
+    pair_freq = dict()
+    for i, window in enumerate(windows) :
+        combination = list(combinations(window, 2))
+        for comb in combination :
+            if (comb[0], comb[1]) in pair_freq :
+                pair_freq[(comb[0], comb[1])] += 1
+            elif (comb[1], comb[0]) in pair_freq :
+                pair_freq[(comb[1], comb[0])] += 1
+            else :
+                pair_freq[(comb[0], comb[1])] = 1
     return pair_freq
