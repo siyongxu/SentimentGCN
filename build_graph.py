@@ -29,15 +29,15 @@ reviews = []
 tokenized_reviews = []
 for review in train_data :
     tokenized_review = []
-    words = okt.pos(review[1])
+    words = okt.pos(review[1]) #review를 토크나이즈
     sentence = []
     for word in words :
-        tokenized_review.append(word[0])
-        sentence.append(word[0])
-    sentence = ' '.join(sentence)
+        tokenized_review.append(word[0]) #토크나이즈 된 값 (word, tag)에서 word만 list에 저장
+        sentence.append(word[0]) #토크나이즈 된 값 list에 저장 ==> string으로 변환 예정
+    sentence = ' '.join(sentence) # 각 단어간 공백을 추가하여 string으로 변환 ==> TF-IDF 사용
     review[1] = tokenized_review
-    tokenized_reviews.append(tokenized_review)
-    reviews.append(sentence)
+    tokenized_reviews.append(tokenized_review) #tokenize 된 값을 저장 ==> window에 사용예정
+    reviews.append(sentence) #string 모음
 
 """
 train_data = (id, tokenized_review, label)
@@ -58,29 +58,24 @@ f = open("data/token.pkl", 'wb')
 pickle.dump(data, f)
 f.close()
 
-train_data = data['train_data']
-
 #build vocab
 vocab = list()
 word_dict = {}
 num_doc = 0
 
 #add documents in vocab
-"""
-for review in train_data :
-    if review[0] not in vocab :
-        vocab.append(review[0])
-"""
+
 num_doc = len(train_data)
 #add words in vocab
+# 단어가 있으면 vocab에 넣고 있으면 빈도수를 올린다.
 for review in train_data :
-    for word in review[1] :
-        if word not in vocab :
-            vocab.append(word)
-        if word not in word_dict :
-            word_dict[word] = 1
+    for idx in range(review[1]) :
+        if review[1][idx] not in vocab :
+            vocab.append(review[1][idx])
+        if review[1][idx] not in word_dict :
+            word_dict[review[1][idx]] = 1
         else :
-            word_dict[word] = word_dict[word] + 1
+            word_dict[review[1][idx]] = word_dict[review[1][idx]] + 1
 
 print("===========================================")
 print("Build Vocabulary Complete!")
@@ -97,6 +92,10 @@ f = open("data/vocab.pkl", 'wb')
 pickle.dump(data, f)
 f.close()
 
+
+
+
+# 빈도수 1 이하인 단어 제거
 new_vocab = []
 for i in range(len(vocab)) :
     if i < num_doc :
@@ -112,33 +111,48 @@ f = open("data/new_vocab.pkl", 'wb')
 pickle.dump(data, f)
 f.close()
 
+"""
+data = read_data('data/new_vocab.pkl')
+vocab = data['new_vocab']
+train_data = data['train_data']
+num_doc = len(train_data)
+"""
 #build A
-A = np.zeros((len(vocab)+num_doc, len(vocab)+num_doc))
+A = np.eye(len(vocab)+num_doc)
 
 tfidf = TfidfVectorizer()
 X = tfidf.fit_transform(reviews)
 X = X.toarray()
-Y = tfidf.get_feature_names()
+#Y = tfidf.get_feature_names()
 
-windows = make_window(tokenized_reviews, 20)
+windows = make_window(tokenized_reviews, 20) #전체 리뷰를 바탕으로 window_size 만큼의 윈도우 생성
 num_windows = len(windows)
 
-word_freq = count_word_freq(vocab, windows)
+word_freq = count_word_freq(vocab, windows) #단어가 포함된 window 계산
 print("===========================================")
 print("Counting Word Frequency Complete!")
 print("===========================================")
-pair_freq = count_pair_freq(vocab, windows)
+f = open("data/till_word_freq.pkl", 'wb')
+data['word_freq'] = word_freq
+pickle.dump(data, f)
+f.close()
+pair_freq = count_pair_freq(windows) #단어 두개씩 포함된 window 계산
 print("===========================================")
 print("Counting pair Frequency Complete!")
 print("===========================================")
 
-
+f = open("data/till_word_pair.pkl", 'wb')
+data['pair_freq'] = word_freq
+pickle.dump(data, f)
+f.close()
+# A의 구성 :
+#       word    doc
+# word
+# doc
 
 for i in range(len(vocab)+num_doc) :
-    for j in range(i, len(vocab)+num_doc) :
-        if i == j :
-            A[i][j] = 1
-        elif i < len(vocab) and j < len(vocab) :
+    for j in range(i+1, len(vocab)+num_doc) :
+        if i < len(vocab) and j < len(vocab) :
             # i , j is word A[i][j] is PMI
             pi = 1.0 * (word_freq[vocab[i]] / num_windows)
             pj = 1.0 * (word_freq[vocab[j]] / num_windows)
@@ -147,10 +161,12 @@ for i in range(len(vocab)+num_doc) :
                 pmi = log(pij/(pi*pj))
                 if pmi >= 0 :
                     A[i][j] = pmi
+                    A[j][i] = pmi
         elif i >= len(vocab) and j < len(vocab) and vocab[j] in tfidf.vocabulary_ :
             # i is document and j is word A[i][j] = TF-IDF
             idx = tfidf.vocabulary_.get(vocab[j])
             A[i][j] = X[i-num_doc][idx]
+            A[j][i] = X[i-num_doc][idx]
     if i%20==0 :
         print(i, "th row finished")
 
