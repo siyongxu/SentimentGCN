@@ -51,13 +51,6 @@ print("===========================================")
 print("Data Tokenize Complete!")
 print("===========================================")
 
-data = {}
-data['train_data'] = train_data
-
-f = open("data/token.pkl", 'wb')
-pickle.dump(data, f)
-f.close()
-
 #build vocab
 vocab = list()
 word_dict = {}
@@ -69,7 +62,7 @@ num_doc = len(train_data)
 #add words in vocab
 # 단어가 있으면 vocab에 넣고 있으면 빈도수를 올린다.
 for review in train_data :
-    for idx in range(review[1]) :
+    for idx in range(len(review[1])) :
         if review[1][idx] not in vocab :
             vocab.append(review[1][idx])
         if review[1][idx] not in word_dict :
@@ -85,13 +78,6 @@ print("Vocab Size : ", len(vocab))
 print("===========================================")
 
 
-data['vocab'] = vocab
-data['word_dict'] = word_dict
-
-f = open("data/vocab.pkl", 'wb')
-pickle.dump(data, f)
-f.close()
-
 
 
 
@@ -105,11 +91,6 @@ for i in range(len(vocab)) :
             new_vocab.append(vocab[i])
 
 print("Size of New Vocab : ", len(new_vocab))
-data['new_vocab'] = new_vocab
-
-f = open("data/new_vocab.pkl", 'wb')
-pickle.dump(data, f)
-f.close()
 
 """
 data = read_data('data/new_vocab.pkl')
@@ -118,7 +99,7 @@ train_data = data['train_data']
 num_doc = len(train_data)
 """
 #build A
-A = np.eye(len(vocab)+num_doc)
+A = np.zeros((len(vocab)+num_doc, len(vocab)+num_doc))
 
 tfidf = TfidfVectorizer()
 X = tfidf.fit_transform(reviews)
@@ -132,6 +113,7 @@ word_freq = count_word_freq(vocab, windows) #단어가 포함된 window 계산
 print("===========================================")
 print("Counting Word Frequency Complete!")
 print("===========================================")
+data = {}
 f = open("data/till_word_freq.pkl", 'wb')
 data['word_freq'] = word_freq
 pickle.dump(data, f)
@@ -167,6 +149,8 @@ for i in range(len(vocab)+num_doc) :
             idx = tfidf.vocabulary_.get(vocab[j])
             A[i][j] = X[i-num_doc][idx]
             A[j][i] = X[i-num_doc][idx]
+        elif i == j :
+            A[i][j] = 1
     if i%20==0 :
         print(i, "th row finished")
 
