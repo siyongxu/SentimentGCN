@@ -21,14 +21,6 @@ def count_word(windows, word) :
 
     return count
 
-def count_pair(windows, i, j) :
-    count = 0
-    for window in windows :
-        if i in window and j in window :
-            count += 1
-
-    return count
-
 def count_word_freq(vocab, windows) :
     word_freq = {}
     for word in vocab :
