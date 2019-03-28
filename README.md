@@ -25,3 +25,6 @@ Sentiment classification based on TextGCN
             - return int
         - function count(word1, word2)
             - return int
+
+1. Run build_graph.py
+2. Run build_graph_.py
