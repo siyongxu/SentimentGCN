@@ -10,6 +10,18 @@ from models import GCN
 
 
 dataset = 'ratings'
+#Hyperparameter
+epochs = 200
+hidden = 200
+dropout = 0.5
+lr = 0.02
+weight_decay = 0
+cuda = 0
+early_stopping = 10
+seed = 42
+
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 # Load data
 with open("data/ind.{}.adj".format(dataset), 'rb') as f:
@@ -19,6 +31,7 @@ with open("data/ind.{}.data".format(dataset), 'rb') as f:
     data = pickle.load(f)
 
 num_doc = data['num_doc']
+
 A = np.array(adj.toarray())
 
 features = sp.eye(A.shape[0])
@@ -29,16 +42,10 @@ idx_train = torch.LongTensor(range(data['train_size']))
 idx_val = torch.LongTensor(range(data['val_size']))
 idx_test = torch.LongTensor(range(data['test_size']))
 
-#Hyperparameter
-epochs = 200
-hidden = 200
-dropout = 0.5
-lr = 0.02
-weight_decay = 0
-cuda = 0
-early_stopping = 10
+
+
 # Model and optimizer
-model = GCN(nfeat=features.shape[1],
+model = GCN(nfeat=features.shape[0],
             nhid=hidden,
             nclass=2,
             dropout=dropout)
@@ -81,7 +88,7 @@ def train(epoch):
           'acc_val: {:.4f}'.format(acc_val.item()),
           'time: {:.4f}s'.format(time.time() - t))
 
-    if epoch > early_stopping and cost_val[-1] > np.mean(cost_val[-(early_stopping + 1):-1]):
+    if epoch > early_stopping and cost_val[-1] > torch.mean(torch.FloatTensor(cost_val[-(early_stopping + 1):-1])):
         print("Early stopping...")
         return False
     return True

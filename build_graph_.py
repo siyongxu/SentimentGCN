@@ -1,15 +1,9 @@
-import os
+from utils import normalize
 import random
-import numpy as np
 import pickle as pkl
-import networkx as nx
 import scipy.sparse as sp
 from math import log
-from sklearn import svm
-from nltk.corpus import wordnet as wn
-from sklearn.feature_extraction.text import TfidfVectorizer
-import sys
-from scipy.spatial.distance import cosine
+
 
 def read_data(filename):
     with open(filename, 'r', encoding='UTF8') as f:
@@ -41,9 +35,9 @@ f.close()
 
 #read data and set number of samples
 train_data = read_data('data/ratings_train_tokenized.txt')
-train_data = train_data[:10000]
+train_data = train_data[:7000]
 test_data = read_data('data/ratings_test_tokenized.txt')
-test_data = test_data[:2000]
+test_data = test_data[:1400]
 doc_content_list = []
 doc_label_list = []
 for review in train_data:
@@ -312,7 +306,8 @@ for i in range(len(shuffle_doc_words_list)):
 node_size = train_size + vocab_size + test_size
 adj = sp.csr_matrix(
     (weight, (row, col)), shape=(node_size, node_size))
-
+adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
+adj = normalize(adj + sp.eye(node_size))
 # dump objects
 
 f = open("data/ind.{}.adj".format(dataset), 'wb')

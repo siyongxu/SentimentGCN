@@ -19,7 +19,7 @@ class GCN(nn.Module):
 
     def forward(self, input):
         x = F.relu(self.conv1(input))
-        return F.softmax(self.conv2(x))
+        return F.log_softmax(self.conv2(x))
 
 
 

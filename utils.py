@@ -1,6 +1,7 @@
 from itertools import combinations
 import torch
 import numpy as np
+import scipy.sparse as sp
 
 def make_window(sentences, window_size) :
     # In this case, sentences = train_data[][1]
@@ -58,3 +59,12 @@ def accuracy(output, labels):
     correct = preds.eq(labels).double()
     correct = correct.sum()
     return correct / len(labels)
+
+def normalize(mx):
+    """Row-normalize sparse matrix"""
+    rowsum = np.array(mx.sum(1))
+    r_inv = np.power(rowsum, -1).flatten()
+    r_inv[np.isinf(r_inv)] = 0.
+    r_mat_inv = sp.diags(r_inv)
+    mx = r_mat_inv.dot(mx)
+    return mx
