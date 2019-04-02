@@ -41,9 +41,9 @@ f.close()
 
 #read data and set number of samples
 train_data = read_data('data/ratings_train_tokenized.txt')
-#train_data = train_data[:10000]
+train_data = train_data[:10000]
 test_data = read_data('data/ratings_test_tokenized.txt')
-#test_data = test_data[:2000]
+test_data = test_data[:2000]
 doc_content_list = []
 doc_label_list = []
 for review in train_data:
@@ -153,10 +153,15 @@ f.close()
 
 # label list
 label_list = list()
+label_str = list()
 for doc_meta in shuffle_doc_label_list:
-	label_list.append(doc_meta)
+    label_str.append(doc_meta)
+    #labels = [0 for i in range(2)]
+    #print(doc_meta)
+    #labels[int(doc_meta)] = 1
+    label_list.append(int(doc_meta))
 
-label_list_str = '\n'.join(label_list)
+label_list_str = '\n'.join(label_str)
 f = open('data/corpus/' + dataset + '_labels.txt', 'w', encoding='utf8')
 f.write(label_list_str)
 f.close()
@@ -312,4 +317,15 @@ adj = sp.csr_matrix(
 
 f = open("data/ind.{}.adj".format(dataset), 'wb')
 pkl.dump(adj, f)
+f.close()
+
+data = {}
+data['num_doc'] = len(shuffle_doc_name_list)
+data['label'] = label_list
+data['train_size'] = train_size
+data['val_size'] = val_size
+data['test_size'] = test_size
+
+f = open("data/ind.{}.data".format(dataset), 'wb')
+pkl.dump(data, f)
 f.close()
