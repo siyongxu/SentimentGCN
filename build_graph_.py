@@ -19,25 +19,16 @@ word_vector_map = {}
 doc_name_list = []
 doc_train_list = []
 doc_test_list = []
-dataset = 'ratings'
-# 문서 이름 업로드
-# 문서 번호로 대체 가능?
-"""
-for line in lines:
-    doc_name_list.append(line.strip())
-    temp = line.split("\t")
-    if temp[1].find('test') != -1:
-        doc_test_list.append(line.strip())
-    elif temp[1].find('train') != -1:
-        doc_train_list.append(line.strip())
-f.close()
-"""
+#dataset = 'ratings'
+dataset = 'watcha'
 
 #read data and set number of samples
-train_data = read_data('data/ratings_train_tokenized.txt')
-train_data = train_data[:7000]
-test_data = read_data('data/ratings_test_tokenized.txt')
-test_data = test_data[:1400]
+#train_data = read_data('data/ratings_train_tokenized.txt')
+train_data = read_data('data/watchas_train_tokenized.txt')
+train_data = train_data[:1000]
+#test_data = read_data('data/ratings_test_tokenized.txt')
+test_data = read_data('data/watchas_test_tokenized.txt')
+test_data = test_data[:200]
 doc_content_list = []
 doc_label_list = []
 for review in train_data:

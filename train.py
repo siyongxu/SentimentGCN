@@ -9,10 +9,11 @@ import scipy.sparse as sp
 from models import GCN
 
 
-dataset = 'ratings'
+dataset = 'watcha'
 #Hyperparameter
 epochs = 200
 hidden = 200
+num_class = 2
 dropout = 0.5
 lr = 0.02
 weight_decay = 0
@@ -32,6 +33,8 @@ with open("data/ind.{}.data".format(dataset), 'rb') as f:
 
 num_doc = data['num_doc']
 
+num_class = num_doc
+
 A = np.array(adj.toarray())
 
 features = sp.eye(A.shape[0])
@@ -47,11 +50,11 @@ idx_test = torch.LongTensor(range(data['test_size']))
 # Model and optimizer
 model = GCN(nfeat=features.shape[0],
             nhid=hidden,
-            nclass=2,
+            nclass=num_doc,
             dropout=dropout)
 optimizer = optim.Adam(model.parameters(),
                        lr=lr, weight_decay=weight_decay)
-
+"""
 if cuda:
     model.cuda()
     features = features.cuda()
@@ -59,7 +62,7 @@ if cuda:
     labels = labels.cuda()
     idx_train = idx_train.cuda()
     idx_val = idx_val.cuda()
-    idx_test = idx_test.cuda()
+    idx_test = idx_test.cuda()"""
 
 cost_val = []
 
